@@ -629,6 +629,26 @@
       e.classList.add('tex-fallback');
     });
   }
+  /* Giriş videosu: siyah açılış/kapanış karelerini gösterme.
+   * Video 0 s'de siyah başlıyor ve son ~0,5 s'de siyaha kararıyor (59,3 s).
+   * Bu yüzden başlık karesinde (2,8 s) bekler, "Kaynak" kartında (58,8 s) durur. */
+  function initVideo() {
+    const v = $('figure.video video');
+    if (!v) return;
+    const POSTER = 2.8, END = 58.8;
+    let started = false;
+    const showPoster = () => { if (!started && v.currentTime < POSTER) v.currentTime = POSTER; };
+    if (v.readyState >= 1) showPoster(); else v.addEventListener('loadedmetadata', showPoster, { once: true });
+    v.addEventListener('play', () => {
+      if (!started && v.currentTime <= POSTER + 0.05) v.currentTime = 0; // ilk oynatmada baştan başla
+      if (v.currentTime >= END - 0.05) v.currentTime = 0; // sondaysa yeniden başlat
+      started = true;
+    });
+    v.addEventListener('timeupdate', () => {
+      if (v.currentTime >= END && !v.paused) { v.pause(); v.currentTime = END; }
+    });
+    v.addEventListener('ended', () => { v.currentTime = END; });
+  }
   const isTyping = (t) => t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
   function visibleCtl() {
     if (document.body.classList.contains('present')) {
@@ -790,6 +810,7 @@
     initProofs();
     initInversion();
     initKeys();
+    initVideo();
     const res = selfTest({ quiet: false });
     const badge = $('#selftest-badge');
     if (badge) { badge.textContent = `Self-test: ${res.pass}/${res.total} ✓`; badge.classList.toggle('bad', res.fail > 0); if (res.fail) badge.textContent = `Self-test: ${res.fail} hata!`; }

@@ -22,7 +22,7 @@
     <div class="wrap top-in">
       <a class="brand" href="#giris"><span class="logo" aria-hidden="true">⌖</span> Üçe Bölmek</a>
       <nav aria-label="Bölümler">
-        <a href="#yapi">Yapı</a><a href="#neden">Neden?</a><a href="#kesfet">Keşfet</a><a href="#thales">Thales</a><a href="#duello">Düello</a><a href="#derin">İnversiyon</a><a href="#kaynak">Kaynak</a>
+        <a href="#yapi">Yapı</a><a href="#neden">Neden?</a><a href="#thales">Thales</a><a href="#duello">Düello</a><a href="#derin">İnversiyon</a><a href="#kaynak">Kaynak</a>
       </nav>
       <div class="tools">
         <button id="present-btn" type="button" class="ghost" title="Sunum modu (tam ekran, boşlukla ilerle)">▣ Sunum</button>
@@ -37,23 +37,10 @@
       <div class="wrap">
         <p class="eyebrow">Pergel · İşaretsiz cetvel · Bir teğet · Bir dikme</p>
         <h1>Bir doğru parçasını üçe bölmenin<br>zarif bir yolu: <em>teğet-dikme yöntemi</em></h1>
-        <p class="lead">Bir doğru parçasını yalnızca pergel ve işaretsiz cetvelle eşit parçalara bölmek Öklid’den beri bilinen bir problemdir. <strong>Hakan Şimşek</strong>, bu köklü soruya bir çemberin <span class="c-tangent">teğetini</span> ve bir <span class="c-build">dikmeyi</span> birleştiren, son derece zarif ve özgün bir yanıt önermiştir. Bu sayfada yöntemi adım adım çiziyor, neden çalıştığını üç farklı kanıtla gösteriyor ve klasik Thales yöntemiyle yan yana, <em>iki farklı yol</em> olarak inceliyoruz.</p>
-
-        <div class="compare" role="group" aria-label="Parçayı üçe bölmek ile açıyı üçe bölmek arasındaki fark">
-          <h2 class="compare-title">Parçayı üçe bölmek <span aria-hidden="true">≠</span><span class="sr">eşit değildir</span> açıyı üçe bölmek</h2>
-          <div class="compare-grid">
-            <div class="cmp ok">
-              <svg viewBox="0 0 120 40" aria-hidden="true"><path d="M8 26H112" class="cg"/><circle cx="8" cy="26" r="3"/><circle cx="112" cy="26" r="3"/><circle cx="42.7" cy="26" r="3" class="cr"/><circle cx="77.3" cy="26" r="3" class="cr"/></svg>
-              <h3>Doğru parçası: <span class="yes">mümkün ✓</span></h3>
-              <p>Her doğru parçası pergel ve cetvelle istenen sayıda eşit parçaya bölünebilir (Öklid, <em>Elemanlar</em> VI.9). Bu sayfa bunun iki farklı yolunu gösteriyor.</p>
-            </div>
-            <div class="cmp no">
-              <svg viewBox="0 0 120 40" aria-hidden="true"><path d="M10 34H110M10 34L96 4" class="cg"/><path d="M10 34L108 22M10 34L104 12" class="cx"/></svg>
-              <h3>Açı: <span class="no">genel olarak imkânsız ✗</span></h3>
-              <p>Pierre Wantzel (1837), keyfi bir açının pergel ve cetvelle üçe bölünemeyeceğini kanıtladı. Örneğin 60°’lik açı bölünemez: cos 20° bir kübik denklemin köküdür ve yalnızca kareköklerle inşa edilemez.</p>
-            </div>
-          </div>
-        </div>
+        <p class="lead"><strong>Hakan Şimşek</strong>’in zarif yöntemiyle, bir doğru parçası yalnızca pergel ve işaretsiz cetvel kullanılarak bir <span class="c-tangent">teğet</span> ve bir <span class="c-build">dikme</span> yardımıyla üçe bölünür.</p>
+        <figure class="video">
+          <video src="ucebolme_teget_dikme_sessiz.mp4" controls muted playsinline loop preload="metadata" aria-label="Teğet-dikme yöntemiyle doğru parçasını üçe bölme animasyonu"></video>
+        </figure>
 
         <ul class="legend" aria-label="Renklerin anlamı">
           <li><i class="sw given"></i>Verilenler</li>
@@ -69,7 +56,17 @@
       <div class="wrap">
         <p class="num">02</p>
         <h2>Teğet-dikme yapısı, adım adım</h2>
-        <p>Verilen parçayı <span data-tex="AB = 4r"></span> olarak düşünelim. İki kez orta nokta alarak <span data-tex="DB = r"></span> ve <span data-tex="AD = 3r"></span> elde ederiz. D merkezli <span data-tex="r"></span> yarıçaplı çembere A’dan bir <span class="c-tangent">teğet</span> çizip değme noktası E’den AB’ye bir <span class="c-build">dikme</span> indirdiğimizde, dikmenin ayağı <span class="c-result">F</span> parçayı tam olarak <strong>2 : 1</strong> oranında böler. Her pergel ve cetvel hamlesi aşağıda gerçekten çizilir; sayaçlar bunları otomatik sayar.</p>
+        <p>D merkezli <span data-tex="r"></span> yarıçaplı çembere A’dan bir <span class="c-tangent">teğet</span> çizip değme noktası E’den AB’ye bir <span class="c-build">dikme</span> indirdiğimizde, dikmenin ayağı <span class="c-result">F</span> parçayı böler. <span data-tex="r = \frac{AB}{d+1}"></span> seçilirse <span data-tex="AF:FB = (d-1):1"></span>, yani <span data-tex="FB = \frac{AB}{d}"></span> olur. Her pergel ve cetvel hamlesi aşağıda gerçekten çizilir; sayaçlar bunları otomatik sayar.</p>
+        <fieldset id="tangent-d" class="seg-ctl"><legend>Kaça bölelim?</legend>
+          <label><input type="radio" name="tgd" value="3" checked> 3</label>
+          <label><input type="radio" name="tgd" value="7"> 7</label>
+          <label><input type="radio" name="tgd" value="11"> 11</label>
+        </fieldset>
+        <ul class="dnotes">
+          <li><b>3:</b> AB’yi iki kez yarıla → <span data-tex="r = AB/4"></span></li>
+          <li><b>7:</b> AB’yi üç kez yarıla → <span data-tex="r = AB/8"></span></li>
+          <li><b>11:</b> önce 3’e böl, sonra özyineleme <span data-tex="d \to d^2+d-1"></span>: F₁D yarıçaplı, B’den geçen çemberle tekrarla → <span data-tex="r = AB/12"></span></li>
+        </ul>
         <div id="tangent-player"></div>
         <p class="hint">İpucu: <kbd>←</kbd> <kbd>→</kbd> ile adım adım ilerleyebilirsiniz.</p>
         <aside class="note"><strong>Küçük bir gözlem:</strong> E ve E′ noktaları AB doğrusuna göre simetriktir (iki çemberin merkezi de AB üzerinde). Bu yüzden <span data-tex="EE'"></span> doğrusu da AB’ye diktir; dikmeyi tek bir cetvel hamlesiyle çizmek mümkündür. Düello bölümünde bu kısa yolu açıp kapatabilirsiniz.</aside>
@@ -113,45 +110,10 @@
       </div>
     </section>
 
-    <!-- 4. Sürükle-keşfet -->
-    <section id="kesfet" class="slide">
-      <div class="wrap">
-        <p class="num">04</p>
-        <h2>Sürükle ve keşfet</h2>
-        <p><strong>B</strong> noktasını sürükleyin (ya da seçip ok tuşlarıyla taşıyın). Parçanın uzunluğu ve yönü ne olursa olsun oran değişmez. <span data-tex="r = \frac{AB}{d+1}"></span> seçildiğinde <span data-tex="AF:FB = (d-1):1"></span> olur; yani F, parçanın <span data-tex="\tfrac{1}{d}"></span>’lik ucunu ayırır.</p>
-        <fieldset id="explore-d" class="seg-ctl"><legend>d (parça sayısı)</legend>
-          <label><input type="radio" name="ed" value="3" checked> 3</label>
-          <label><input type="radio" name="ed" value="5"> 5</label>
-          <label><input type="radio" name="ed" value="9"> 9</label>
-        </fieldset>
-        <div class="explore">
-          <div class="fig"><svg id="explore-svg" class="geo drag" role="img" aria-label="Sürüklenebilir teğet-dikme şekli"></svg></div>
-          <div id="explore-out" class="readout" aria-live="polite"></div>
-        </div>
-        <div class="cards">
-          <div class="card">
-            <h3>Genel formül</h3>
-            <p>Herhangi bir <span data-tex="0 &lt; r &lt; AB/2"></span> için:</p>
-            <div class="math-d" data-tex="\frac{AF}{FB} = \frac{AB-2r}{r}"></div>
-          </div>
-          <div class="card">
-            <h3>Özyineleme I: <span data-tex="d \to 2d-1"></span></h3>
-            <p>Bulunan F için <strong>BF çaplı</strong> çemberle yöntemi tekrarlayın:</p>
-            <p class="seq" id="seq-a"></p>
-          </div>
-          <div class="card">
-            <h3>Özyineleme II: <span data-tex="d \to d^2+d-1"></span></h3>
-            <p><strong>FD yarıçaplı</strong>, B’ye içten teğet çemberle tekrarlayın:</p>
-            <p class="seq" id="seq-b"></p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. Thales -->
+    <!-- 4. Thales -->
     <section id="thales" class="slide">
       <div class="wrap">
-        <p class="num">05</p>
+        <p class="num">04</p>
         <h2>Klasik yol: Thales (kesen) yöntemi</h2>
         <p>Öklid’in <em>Elemanlar</em> VI.9’daki yaklaşımının ruhunu taşıyan bu yöntemde A’dan bir yardımcı ışın çizilir, üzerine pergelle eşit adımlar atılır, son nokta B’ye bağlanır ve diğer noktalardan bu doğruya paraleller çizilir. Paraleller burada bile gerçek pergel-cetvel adımlarıyla, <strong>açı kopyalayarak</strong> çizilir.</p>
         <fieldset id="thales-d" class="seg-ctl"><legend>Parça sayısı</legend>
@@ -162,10 +124,10 @@
       </div>
     </section>
 
-    <!-- 6. Düello -->
+    <!-- 5. Düello -->
     <section id="duello" class="slide">
       <div class="wrap">
-        <p class="num">06</p>
+        <p class="num">05</p>
         <h2>İki farklı yol, yan yana</h2>
         <p>Her iki yöntem de aynı hedefe gider: AF : FB = 2 : 1 olan F noktası. İki animasyon senkron oynar; sayaçlar ve aşağıdaki tablo, yapıların koduyla <em>otomatik</em> olarak sayılır — hiçbir sayı elle yazılmadı.</p>
         <div id="duel">
@@ -194,10 +156,10 @@
       </div>
     </section>
 
-    <!-- 7. Derin bakış -->
+    <!-- 6. Derin bakış -->
     <section id="derin" class="slide">
       <div class="wrap">
-        <p class="num">07</p>
+        <p class="num">06</p>
         <h2>Derin bakış: F, A’nın inversiyonudur</h2>
         <p>D merkezli, <span data-tex="r"></span> yarıçaplı bir çembere göre <strong>inversiyon</strong>, D’den çıkan bir ışın üzerindeki P noktasını <span data-tex="DP\cdot DP' = r^2"></span> olacak biçimde P′ noktasına götürür. Teğet-dikme yapısında bulduğumuz bağıntı tam da budur:</p>
         <div class="math-d" data-tex="DF\cdot DA = DE^2 = r^2"></div>
@@ -211,10 +173,10 @@
       </div>
     </section>
 
-    <!-- 8. Kaynak -->
+    <!-- 7. Kaynak -->
     <section id="kaynak" class="slide">
       <div class="wrap">
-        <p class="num">08</p>
+        <p class="num">07</p>
         <h2>Kaynak</h2>
         <div class="ref">
           <p class="cite">Hakan Şimşek, <cite>“Bir Doğru Parçasını Pergel ve İşaretsiz Cetvel ile Üçe Bölmek İçin Yeni Bir Geometrik Yöntem”</cite>. Zenodo.<br>DOI: <a href="https://doi.org/10.5281/zenodo.21819997" rel="noopener">10.5281/zenodo.21819997</a></p>
@@ -222,8 +184,6 @@
         </div>
         <h3>Öklid VI.9 notu</h3>
         <p>Öklid, <em>Elemanlar</em>, VI. Kitap, Önerme 9: <q>Verilen bir doğru parçasından istenen bir kesri ayırmak.</q> Bu sayfadaki Thales (kesen) yönteminin klasik kaynağıdır. Kanıtlarda kullanılan dik üçgen bağıntısı ise aynı kitabın 8. önermesinden gelir.</p>
-        <h3>Ek kaynak</h3>
-        <p>P. L. Wantzel, “Recherches sur les moyens de reconnaître si un problème de géométrie peut se résoudre avec la règle et le compas”, <em>Journal de Mathématiques Pures et Appliquées</em>, 1837.</p>
         <p class="small"><span id="selftest-badge" class="badge">Self-test çalışıyor…</span> Konsolda <code>selfTest()</code> yazarak sayısal doğrulamayı yeniden çalıştırabilirsiniz.</p>
       </div>
     </section>
@@ -233,7 +193,7 @@
 
   <div class="present-bar" aria-label="Sunum denetimleri">
     <button id="present-prev" type="button" aria-label="Önceki bölüm">‹</button>
-    <span id="present-ind">1 / 8</span>
+    <span id="present-ind">1 / 7</span>
     <button id="present-next" type="button" aria-label="Sonraki bölüm">›</button>
     <button id="present-exit" type="button" aria-label="Sunum modundan çık">✕ Çık</button>
     <span class="present-help">Boşluk: ilerle · Shift+Boşluk: geri · Esc: çık</span>

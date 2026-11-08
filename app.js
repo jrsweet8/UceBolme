@@ -55,12 +55,16 @@
   /* ------------------------------------------------------------------ */
   /* 2. Teğet-dikme yapısı (Hakan Şimşek)                                  */
   /* ------------------------------------------------------------------ */
+  /* d = 3 : AB'yi iki kez yarıla (r = AB/4), teğet-dikme → FB = AB/3
+   * d = 7 : üç kez yarıla (r = AB/8), teğet-dikme → FB = AB/7
+   * d = 11: d = 3 yapısı + özyineleme d → d² + d − 1 (F₁D yarıçaplı, B'den geçen çember) */
   function buildTangent(A, B, opt = {}) {
+    const d = opt.d || 3;
     const { up, dn, lf, rt, mix } = dirs(A, B);
     const AB = G.dist(A, B), arcLen = 0.09 * AB, K = 0.62, UP = -1, DN = 1;
     const steps = [];
     steps.push({
-      cap: 'Verilen: AB doğru parçası. Amaç: yalnızca pergel ve işaretsiz cetvel kullanarak AF : FB = 2 : 1 olacak biçimde F noktasını bulmak.',
+      cap: `Verilen: AB doğru parçası. Amaç: yalnızca pergel ve işaretsiz cetvel kullanarak AF : FB = ${d - 1} : 1, yani FB = AB/${d} olacak biçimde F noktasını bulmak.`,
       items: [seg(A, B, 'given'), pt(A, 'A', 'given', lf), pt(B, 'B', 'given', rt)],
     });
     // Orta nokta: iki eşit yay + kesişimlerden geçen doğru
@@ -71,69 +75,100 @@
       const M = G.lineLine(Xu, Xd, P, Q);
       return { M, items: [compassArc(P, R, [Xu, Xd], arcLen), compassArc(Q, R, [Xu, Xd], arcLen), dot(Xu), dot(Xd), ruler(Xu, Xd, 'aux', 0.12)] };
     };
-    const m1 = midpoint(A, B), C = m1.M;
+    const lblDn = mix(dn, lf, 0.8);
+
+    // 1) Yarılamalar
+    const halvings = d === 7 ? 3 : 2;
+    const names = halvings === 3 ? ['C', 'K', 'D'] : ['C', 'D'];
+    let P = A, C = null;
+    for (let h = 0; h < halvings; h++) {
+      const m = midpoint(P, B);
+      const nm = names[h], last = h === halvings - 1;
+      let cap = h === 0
+        ? 'C, AB’nin orta noktası: A ve B merkezli, eşit yarıçaplı iki yay çiz. Yayların kesişimlerinden geçen doğru AB’yi C’de keser.'
+        : `${nm}, ${names[h - 1]}B’nin orta noktası: aynı işlemi ${names[h - 1]} ve B için tekrarla.`;
+      if (last) cap += ` Böylece DB = r = AB/${2 ** halvings} ve AD = ${2 ** halvings - 1}r olur.`;
+      steps.push({ cap, items: [...m.items, pt(m.M, nm, 'build', lblDn)] });
+      P = m.M; if (h === 0) C = m.M;
+    }
+    const D = P, r = G.dist(D, B);
     steps.push({
-      cap: 'C, AB’nin orta noktası: A ve B merkezli, eşit yarıçaplı iki yay çiz. Yayların kesişimlerinden geçen doğru AB’yi C’de keser.',
-      items: [...m1.items, pt(C, 'C', 'build', mix(dn, lf, 0.8))],
-    });
-    const m2 = midpoint(C, B), D = m2.M, r = G.dist(D, B);
-    steps.push({
-      cap: 'D, CB’nin orta noktası: aynı işlemi C ve B için tekrarla. Böylece DB = r = AB/4 ve AD = 3r olur.',
-      items: [...m2.items, pt(D, 'D', 'build', mix(dn, lf, 0.8))],
-    });
-    steps.push({
-      cap: 'D merkezli, DB = r yarıçaplı çemberi çiz. A bu çemberin dışındadır (AD = 3r > r).',
+      cap: `D merkezli, DB = r yarıçaplı çemberi çiz. A bu çemberin dışındadır (AD = ${2 ** halvings - 1}r > r).`,
       items: [compassCircle(D, r, 'build', 0), txt(G.add(D, G.mul(G.add(up, rt), r * 0.42)), 'r', 'build')],
     });
-    const m3 = midpoint(A, D), M = m3.M;
-    steps.push({
-      cap: 'Teğeti kurmak için AD’nin orta noktası M’yi bul (yine iki yay ve bir doğru).',
-      items: [...m3.items, pt(M, 'M', 'aux', mix(dn, lf, 0.8))],
-    });
-    const T = G.circleCircle(M, G.dist(M, D), D, r);
-    const E = G.pickSide(T, A, B, UP), E2 = G.pickSide(T, A, B, DN);
-    steps.push({
-      cap: 'M merkezli, AD çaplı yardımcı çemberi çiz. D çemberini E’de keser. Thales teoremine göre ∠AED = 90°.',
-      items: [Object.assign(compassCircle(M, G.dist(M, D), 'aux', Math.PI), { dash: true }), pt(E, 'E', 'tangent', mix(up, rt, 0.25)), pt(E2, 'E′', 'aux', mix(dn, rt, 0.25))],
-    });
-    steps.push({
-      cap: 'A’dan E’ye doğru çiz: AE, çembere E’de teğettir, çünkü DE yarıçapına diktir (∠AED = 90°).',
-      items: [ruler(A, E, 'tangent', 0, 0.18), seg(D, E, 'note', { dash: true }), right(E, A, D)],
-    });
-    let F;
-    if (opt.short) {
-      F = G.lineLine(E, E2, A, B);
+
+    // 2) Teğet-dikme motifi (D merkezli ρ yarıçaplı çember için)
+    const stage = (Dc, rho, s, Flabel, final) => {
+      const Dn = `D${s}`;
+      const m3 = midpoint(A, Dc), M = m3.M;
       steps.push({
-        cap: 'Kısa yol: E ve E′ noktaları AB’ye göre simetriktir; EE′ doğrusu doğrudan AB’ye diktir ve AB’yi F’de keser.',
-        items: [ruler(E, E2, 'build', 0.06), pt(F, 'F', 'result', mix(dn, lf, 0.9)), right(F, B, E)],
+        cap: `Teğeti kurmak için A${Dn}’nin orta noktası M${s}’yi bul (yine iki yay ve bir doğru).`,
+        items: [...m3.items, pt(M, `M${s}`, 'aux', lblDn)],
       });
-    } else {
-      const h = G.dist(E, G.foot(E, A, B)); // yalnızca uygun bir pergel açıklığı seçmek için
-      const rho = 1.3 * h;
-      const Gs = G.lineCircle(A, B, E, rho);
-      const G1 = Gs[0], G2 = Gs[1];
+      const T = G.circleCircle(M, G.dist(M, Dc), Dc, rho);
+      const E = G.pickSide(T, A, B, UP), E2 = G.pickSide(T, A, B, DN);
       steps.push({
-        cap: 'E’den AB’ye dikme: E merkezli bir yay çiz; yay AB’yi G₁ ve G₂ noktalarında keser.',
-        items: [compassArc(E, rho, [G1, G2], arcLen), pt(G1, 'G₁', 'aux', mix(dn, lf, 0.6)), pt(G2, 'G₂', 'aux', mix(dn, rt, 0.6))],
+        cap: `M${s} merkezli, A${Dn} çaplı yardımcı çemberi çiz. ${Dn} merkezli çemberi E${s}’de keser. Thales teoremine göre ∠AE${s}${Dn} = 90°.`,
+        items: [Object.assign(compassCircle(M, G.dist(M, Dc), 'aux', Math.PI), { dash: true }), pt(E, `E${s}`, 'tangent', mix(up, rt, 0.25)), pt(E2, s ? '' : 'E′', 'aux', mix(dn, rt, 0.25))],
       });
-      const H = G.pickSide(G.circleCircle(G1, rho, G2, rho), A, B, DN);
       steps.push({
-        cap: 'G₁ ve G₂ merkezli, eşit yarıçaplı iki yay çiz; AB’nin öbür yanında H’de kesişirler.',
-        items: [compassArc(G1, rho, [H], arcLen), compassArc(G2, rho, [H], arcLen), pt(H, 'H', 'aux', mix(dn, rt, 0.6))],
+        cap: `A’dan E${s}’ye doğru çiz: AE${s} çembere E${s}’de teğettir, çünkü ${Dn}E${s} yarıçapına diktir.`,
+        items: [ruler(A, E, 'tangent', 0, 0.18), seg(Dc, E, 'note', { dash: true }), right(E, A, Dc)],
       });
-      F = G.lineLine(E, H, A, B);
+      const role = final ? 'result' : 'build';
+      let F;
+      if (opt.short) {
+        F = G.lineLine(E, E2, A, B);
+        steps.push({
+          cap: `Kısa yol: E${s} ve E${s}′ AB’ye göre simetriktir; bu iki noktadan geçen doğru doğrudan AB’ye diktir ve AB’yi ${Flabel}’de keser.`,
+          items: [ruler(E, E2, 'build', 0.06), pt(F, Flabel, role, mix(dn, lf, 0.9)), right(F, B, E)],
+        });
+      } else {
+        const h = G.dist(E, G.foot(E, A, B)); // yalnızca uygun bir pergel açıklığı seçmek için
+        const rr = 1.3 * h;
+        const [G1, G2] = G.lineCircle(A, B, E, rr);
+        steps.push({
+          cap: `E${s}’den AB’ye dikme: E${s} merkezli bir yay çiz; yay AB’yi G₁ ve G₂ noktalarında keser.`,
+          items: [compassArc(E, rr, [G1, G2], arcLen), pt(G1, 'G₁', 'aux', mix(dn, lf, 0.6)), pt(G2, 'G₂', 'aux', mix(dn, rt, 0.6))],
+        });
+        const H = G.pickSide(G.circleCircle(G1, rr, G2, rr), A, B, DN);
+        steps.push({
+          cap: 'G₁ ve G₂ merkezli, eşit yarıçaplı iki yay çiz; AB’nin öbür yanında H’de kesişirler.',
+          items: [compassArc(G1, rr, [H], arcLen), compassArc(G2, rr, [H], arcLen), pt(H, 'H', 'aux', mix(dn, rt, 0.6))],
+        });
+        F = G.lineLine(E, H, A, B);
+        steps.push({
+          cap: `E${s} ile H’yi birleştir: bu doğru AB’ye diktir ve AB’yi ${Flabel}’de keser.`,
+          items: [ruler(E, H, 'build', 0.06), pt(F, Flabel, role, mix(dn, lf, 0.9)), right(F, B, E)],
+        });
+      }
+      return { E, E2, F };
+    };
+
+    const s1 = stage(D, r, '', d === 11 ? 'F₁' : 'F', d !== 11);
+    let F = s1.F, rLast = r;
+    if (d === 11) {
+      const rho = G.dist(s1.F, D);
+      const D2 = G.lineCircle(A, B, B, rho).sort((p, q) => G.dist(A, p) - G.dist(A, q))[0];
       steps.push({
-        cap: 'E ile H’yi birleştir: EH doğrusu AB’ye diktir ve AB’yi F’de keser.',
-        items: [ruler(E, H, 'build', 0.06), pt(F, 'F', 'result', mix(dn, lf, 0.9)), right(F, B, E)],
+        cap: 'Özyineleme (d → d² + d − 1): pergeli F₁D uzunluğuna aç ve B merkezli bir yayla AB’yi D₂’de kes. F₁D = r/3 olduğundan D₂B = AB/12.',
+        items: [compassArc(B, rho, [D2], arcLen * 0.6), pt(D2, 'D₂', 'build', mix(dn, rt, 0.6))],
       });
+      steps.push({
+        cap: 'D₂ merkezli, D₂B yarıçaplı çemberi çiz (B’den geçer). Şimdi aynı teğet-dikme motifini bu küçük çember için tekrarlayacağız.',
+        items: [compassCircle(D2, rho, 'build', 0)],
+      });
+      F = stage(D2, rho, '₂', 'F', true).F;
+      rLast = rho;
     }
     const off = G.mul(dn, 0.13 * AB);
     steps.push({
-      cap: 'Sonuç: DF = r/3, dolayısıyla AF = 8r/3 ve FB = 4r/3. AF : FB = 2 : 1 — F, AB’yi üçe böler (FB = AB/3).',
+      cap: `Sonuç: son çemberin yarıçapı r = AB/${d + 1} ve merkezinin A’ya uzaklığı ${d}r olduğundan, DE² = DF · DA ile DF = r/${d} bulunur. Böylece FB = AB/${d} ve AF : FB = ${d - 1} : 1${d === 3 ? ' — F, AB’yi üçe böler' : ''}.`,
       items: [seg(A, F, 'result', { cls: 'thick' }), seg(F, B, 'result2', { cls: 'thick' }),
-        txt(G.add(G.mid(A, F), off), 'AF = 8r/3', 'result'), txt(G.add(G.mid(F, B), off), '4r/3', 'result')],
+        txt(G.add(G.mid(A, F), off), `${d - 1} pay`, 'result'),
+        txt(d === 3 ? G.add(G.mid(F, B), off) : G.add(B, G.add(G.mul(rt, 0.06 * AB), G.mul(dn, 0.2 * AB))), '1 pay', 'result')],
     });
-    return { steps, meta: { A, B, C, D, M, E, E2, F, r } };
+    return { steps, meta: { A, B, C, D, E: s1.E, E2: s1.E2, F, r, rLast, d } };
   }
 
   /* ------------------------------------------------------------------ */
@@ -522,68 +557,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* 8. Sürükle-keşfet                                                    */
-  /* ------------------------------------------------------------------ */
-  function initExplorer() {
-    const svg = $('#explore-svg');
-    const W = 640, H = 400;
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const u = W / 500; setScale(svg, u);
-    const A = G.P(0.14 * W, 0.66 * H);
-    let B = G.P(0.8 * W, 0.66 * H);
-    let d = 3;
-    const handle = el('circle', { r: 20, tabindex: 0, role: 'slider', 'aria-label': 'B noktası (sürükleyin; ok tuşlarıyla da taşınır)' }, 'handle');
-    const out = $('#explore-out');
-    function draw() {
-      const { up, dn, lf, rt, mix } = dirs(A, B);
-      const { D, r, E, F } = G.tangentDivide(A, B, d);
-      const items = [
-        seg(A, B, 'given'), { t: 'circle', c: D, r, role: 'build' },
-        seg(A, G.add(E, G.mul(G.sub(E, A), 0.15)), 'tangent'), seg(D, E, 'note', { dash: true }), seg(E, F, 'build'),
-        right(E, A, D), right(F, B, E),
-        seg(A, F, 'result', { cls: 'thick' }), seg(F, B, 'result2', { cls: 'thick' }),
-        pt(A, 'A', 'given', lf), pt(D, 'D', 'build', dn), pt(E, 'E', 'tangent', up), pt(F, 'F', 'result', mix(dn, lf, 0.9)), pt(B, 'B', 'given', mix(rt, up, 0.6)),
-      ];
-      renderStatic(svg, items, u);
-      handle.setAttribute('cx', n2(B.x)); handle.setAttribute('cy', n2(B.y));
-      svg.appendChild(handle);
-      const AB = G.dist(A, B), AF = G.dist(A, F), FB = G.dist(F, B);
-      handle.setAttribute('aria-valuetext', `AF:FB = ${(AF / FB).toFixed(6)} : 1`);
-      out.innerHTML = `
-        <div><span>AB</span><b>${fmt(AB)}</b></div>
-        <div><span>r = AB/${d + 1}</span><b>${fmt(r)}</b></div>
-        <div><span>AF</span><b>${fmt(AF)}</b></div>
-        <div><span>FB</span><b>${fmt(FB)}</b></div>
-        <div class="big"><span>AF : FB</span><b>${(AF / FB).toFixed(9)} : 1</b></div>
-        <div class="big"><span>Beklenen (d − 1)</span><b>${d - 1} : 1</b></div>`;
-    }
-    const toLocal = (e) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
-    const setB = (p) => {
-      let q = G.P(clamp(p.x, 20, W - 20), clamp(p.y, 20, H - 20));
-      if (G.dist(A, q) < 140) q = G.add(A, G.mul(G.dist(A, q) > 1e-6 ? G.unit(G.sub(q, A)) : G.P(1, 0), 140));
-      B = q; draw();
-    };
-    let drag = false;
-    handle.addEventListener('pointerdown', (e) => { drag = true; handle.setPointerCapture(e.pointerId); e.preventDefault(); });
-    handle.addEventListener('pointermove', (e) => { if (drag) setB(toLocal(e)); });
-    handle.addEventListener('pointerup', () => { drag = false; });
-    handle.addEventListener('pointercancel', () => { drag = false; });
-    handle.addEventListener('keydown', (e) => {
-      const st = e.shiftKey ? 20 : 6;
-      const mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
-      if (mv) { e.preventDefault(); e.stopPropagation(); setB(G.P(B.x + mv[0], B.y + mv[1])); handle.focus(); }
-    });
-    $$('#explore-d input').forEach((inp) => inp.addEventListener('change', () => { d = +inp.value; draw(); }));
-    draw();
-    // Özyineleme dizileri — kodla hesaplanır
-    const seqA = [3]; while (seqA.length < 7) seqA.push(2 * seqA[seqA.length - 1] - 1);
-    const seqB = [3]; while (seqB.length < 3) { const x = seqB[seqB.length - 1]; seqB.push(x * x + x - 1); }
-    $('#seq-a').textContent = seqA.join(' → ') + ' → …';
-    $('#seq-b').textContent = seqB.join(' → ') + ' → …';
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* 9. İnversiyon animasyonu                                             */
+  /* 8. İnversiyon animasyonu                                             */
   /* ------------------------------------------------------------------ */
   function initInversion() {
     const svg = $('#inv-svg');
@@ -633,7 +607,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* 10. Tema, KaTeX, klavye, sunum modu                                  */
+  /* 9. Tema, KaTeX, klavye, sunum modu                                  */
   /* ------------------------------------------------------------------ */
   function initTheme() {
     const btn = $('#theme-btn');
@@ -721,7 +695,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* 11. Self-test (konsolda: selfTest())                                 */
+  /* 10. Self-test (konsolda: selfTest())                                 */
   /* ------------------------------------------------------------------ */
   function selfTest({ quiet = false } = {}) {
     const TOL = 1e-9;
@@ -779,6 +753,11 @@
       check('animasyon: teğet-dikme (tam) AF/FB', ratio(A, B, buildTangent(A, B).meta.F), 2);
       check('animasyon: teğet-dikme (EE′ kısa) AF/FB', ratio(A, B, buildTangent(A, B, { short: true }).meta.F), 2);
       for (let k = 0; k < 3; k++) { const [a, b] = randSeg(); check(`animasyon: teğet-dikme rastgele #${k + 1}`, ratio(a, b, buildTangent(a, b).meta.F), 2); }
+      [3, 7, 11].forEach((d) => {
+        check(`animasyon: teğet-dikme d=${d} AF/FB`, ratio(A, B, buildTangent(A, B, { d }).meta.F), d - 1);
+        check(`animasyon: teğet-dikme d=${d} (kısa) AF/FB`, ratio(A, B, buildTangent(A, B, { d, short: true }).meta.F), d - 1);
+        const [a, b] = randSeg(); check(`animasyon: teğet-dikme d=${d} rastgele`, ratio(a, b, buildTangent(a, b, { d }).meta.F), d - 1);
+      });
       [3, 4, 5, 9].forEach((d) => {
         const m = buildThales(A, B, d, { all: true });
         check(`animasyon: Thales d=${d} AF/FB`, ratio(A, B, m.meta.F), d - 1);
@@ -801,13 +780,14 @@
   function init() {
     initTheme();
     initKatex();
-    new Player($('#tangent-player'), () => buildTangent(...givenAB()), { label: 'Teğet-dikme yapısı adım adım' });
+    let tgD = 3;
+    const tgP = new Player($('#tangent-player'), () => buildTangent(...givenAB(), { d: tgD }), { label: 'Teğet-dikme yapısı adım adım' });
+    $$('#tangent-d input').forEach((inp) => inp.addEventListener('change', () => { tgD = +inp.value; tgP.rebuild(); }));
     let thD = 3;
     const thP = new Player($('#thales-player'), () => buildThales(...givenAB(), thD, { all: true }), { label: 'Thales yöntemi adım adım' });
     $$('#thales-d input').forEach((inp) => inp.addEventListener('change', () => { thD = +inp.value; thP.rebuild(); }));
     new Duel($('#duel'));
     initProofs();
-    initExplorer();
     initInversion();
     initKeys();
     const res = selfTest({ quiet: false });
